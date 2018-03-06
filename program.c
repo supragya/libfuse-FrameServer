@@ -32,15 +32,19 @@ const int HEIGHT = 3072;
 
 // The buffers to keep the values of bytes of different channels
 
-char* imageredgr;
+char *imageredgr;
 
 // Function declarations (nothing much to look here)
 static int getattr_callback(const char *path, struct stat *stbuf);
+
 static int readdir_callback(const char *path, void *buf, fuse_fill_dir_t filler,
                             off_t offset, struct fuse_file_info *fi);
+
 static int open_callback(const char *path, struct fuse_file_info *fi);
+
 static int read_callback(const char *path, char *buf, size_t size, off_t offset,
                          struct fuse_file_info *fi);
+
 void preprocess();
 
 // LibFUSE function references to be utilized
@@ -51,53 +55,52 @@ static struct fuse_operations fuse_example_operations = {
         .readdir = readdir_callback,
 };
 
-int main(int argc, char *argv[]){
-    imageredgr = (char*)malloc(WIDTH*HEIGHT*4);
+int main(int argc, char *argv[]) {
+    imageredgr = (char *) malloc(WIDTH * HEIGHT * 4);
     preprocess();
 
     // Begin LibFUSE, register the functions with libfuse by sending function references
     return fuse_main(argc, argv, &fuse_example_operations, NULL);
 }
 
-void preprocess(){
+void preprocess() {
     uint8_t eightbits[3];
-    uint16_t left,right;
+    uint16_t left, right;
 
     uint8_t left8bit, right8bit;
     // Open the input file and make it ready
     FILE *pFile;
-    pFile = fopen(INPUT_FILE,"r");
-    if (!pFile){
+    pFile = fopen(INPUT_FILE, "r");
+    if (!pFile) {
         printf("cannot open file\n");
         exit(-1);
     }
-    for(unsigned int row = 0; row < HEIGHT; row++){
-        for(unsigned int col = 0; col < WIDTH/2; col++ ){
+    for (unsigned int row = 0; row < HEIGHT; row++) {
+        for (unsigned int col = 0; col < WIDTH / 2; col++) {
 
             //Read 3 eightbit values
-            for(int bt = 0; bt < 3; bt++)
+            for (int bt = 0; bt < 3; bt++)
                 fread(&eightbits[bt], sizeof(eightbits[bt]), 1, pFile);
 
             //Retrieve left and right side
             left = right = 0;
-            left = ((eightbits[0]<<4)|(eightbits[1]&0x40)>>4);
-            right = ((eightbits[1]&0x0F)<<8|(eightbits[2]));
+            left = ((eightbits[0] << 4) | (eightbits[1] & 0x40) >> 4);
+            right = ((eightbits[1] & 0x0F) << 8 | (eightbits[2]));
 
             //Find the bit values
             left8bit = right8bit = 0;
             //Left8bits are : ((eightbits[0]<<4)|(eightbits[1]&0x40)>>4)>>4 so, effectively eightbits[0]
-            left8bit = left>>R_SHIFTING_FACTOR;
+            left8bit = left >> R_SHIFTING_FACTOR;
             //Right8bits are: ((eightbits[1]&0x0F)<<4|(eightbits[2]))>>$ so effectively ((eightbits[1]&0x0F)|(eightbits[2])>>4)
-            right8bit = right>>R_SHIFTING_FACTOR;
+            right8bit = right >> R_SHIFTING_FACTOR;
 
             //Set the values
             //on the even lines every second sample is a 'red' and on the odd lines every second a 'blue'
 
-            if(row%2 == 0){
-                imageredgr[((row/2)*WIDTH/2 + col)] = (int)left8bit;
+            if (row % 2 == 0) {
+                imageredgr[((row / 2) * WIDTH / 2 + col)] = (int) left8bit;
 //                imagegreen1gr[((row/2)*WIDTH/2 + col)] = (int)right8bit;
-            }
-            else{
+            } else {
 //                imagegreen2gr[((row/2)*WIDTH/2 + col)] = (int)left8bit;
 //                imagebluegr[((row/2)*WIDTH/2 + col)] = (int)right8bit;
             }
@@ -136,7 +139,7 @@ static int getattr_callback(const char *path, struct stat *stbuf) {
     if (strcmp(path, filepath) == 0) {
         stbuf->st_mode = S_IFREG | 0777;
         stbuf->st_nlink = 1;
-        stbuf->st_size = WIDTH*HEIGHT*4 ;
+        stbuf->st_size = WIDTH * HEIGHT * 4;
         return 0;
     }
 
@@ -179,7 +182,7 @@ static int read_callback(const char *path, char *buf, size_t size, off_t offset,
                          struct fuse_file_info *fi) {
 
     if (strcmp(path, filepath) == 0) {
-        size_t len = WIDTH*HEIGHT*4 ;
+        size_t len = WIDTH * HEIGHT * 4;
         if (offset >= len) {
             return 0;
         }
