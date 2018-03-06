@@ -7,7 +7,7 @@ Currently not much. It takes in a RAW12 image, finds the red channel and serves 
 ## Getting the system up and running
 Clone the directory and build using
 ```
-cc program.c -D_FILE_OFFSET_BITS=64 -D_FILE_OFFSET_BITS=64 -I/usr/include/fuse -lfuse -pthread
+cc program.c -D_FILE_OFFSET_BITS=64 -I/usr/include/fuse -lfuse -pthread
 ```
 
 Once built, you have the application `a.out`. Open a new terminal and use the following commands to run:
