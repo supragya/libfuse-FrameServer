@@ -61,7 +61,7 @@ namespace AviEncode{
         int addtobuffer(char*, unsigned int);
         char* writeBuffer;
         int WriteHeaderSequence();
-        void setAviMainHeader(FourCC code, DWORD cb, DWORD usecperframe, DWORD maxbytepersec,
+        void setAviMainHeader(FourCC code, DWORD usecperframe, DWORD maxbytepersec,
                               DWORD paddinggranularity, DWORD flags, DWORD totalframes,
                               DWORD initialframes, DWORD streams, DWORD suggestedbufsize,
                               DWORD width, DWORD height);

@@ -46,7 +46,8 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     AviEncode::setFourCC(&list.listtype, "hdr1");
     addtobuffer((char*)&list, sizeof(AviEncode::avi_list_h));
 
-    showBuffer();
+    addtobuffer((char*)&avimainheader, sizeof(avimainheader));
+
     return 0;
 }
 
@@ -56,13 +57,13 @@ int AviEncode::AviContainer::addtobuffer(char* content, unsigned int size) {
     return 0;
 }
 
-void AviEncode::AviContainer::setAviMainHeader(FourCC code, uint32_t cb, uint32_t usecperframe, uint32_t maxbytepersec,
+void AviEncode::AviContainer::setAviMainHeader(FourCC code, uint32_t usecperframe, uint32_t maxbytepersec,
                                               uint32_t paddinggranularity, uint32_t flags, uint32_t totalframes,
                                               uint32_t initialframes, uint32_t streams, uint32_t suggestedbufsize,
                                               uint32_t width, uint32_t height) {
 
     AviEncode::setFourCC(&avimainheader.fcc, (char*)& code);
-    avimainheader.cb = cb;
+    avimainheader.cb = sizeof(AviEncode::AviContainer::AVIMAINHEADER) - sizeof(AviEncode::FourCC);
     avimainheader.dwMicroSecPerFrame = usecperframe;
     avimainheader.dwMaxBytesPerSec = maxbytepersec;
     avimainheader.dwPaddingGranularity = paddinggranularity;
