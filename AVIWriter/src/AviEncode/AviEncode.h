@@ -99,7 +99,7 @@ namespace AviEncode {
         DWORD biClrImportant;
     } BITMAPINFOHEADER;
 
-    void fcccpy(AviEncode::FOURCC* fcc, std::string str);
+    void fcccpy(AviEncode::FOURCC *fcc, std::string str);
 
     class AviContainer {
     private:
@@ -108,7 +108,6 @@ namespace AviEncode {
         std::fstream file;
         avi_usersettings usersettings;
 
-        void showBuffer(); // Only for debug
         int WriteHeaderSequence();
 
     public:

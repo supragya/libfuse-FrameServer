@@ -25,25 +25,28 @@ AviEncode::AviContainer::AviContainer(const char *filename, avi_usersettings use
     WriteHeaderSequence();
 }
 
-
 int AviEncode::AviContainer::WriteHeaderSequence() {
 
     // RIFF List
     AviEncode::avi_list_h riff;
     AviEncode::fcccpy(&riff.code, "RIFF");
-    riff.listsize = 10000; // TODO: calculate filesize here
+    riff.listsize = 1000000; // TODO: calculate filesize here
     AviEncode::fcccpy(&riff.listtype, "AVI ");
 
     // avih list
-    AviEncode::avi_list_h avih;
-    AviEncode::fcccpy(&avih.code, "LIST");
-    avih.listsize = sizeof(AviEncode::avi_list_h) - 8 +
+    AviEncode::avi_list_h hdrl;
+    AviEncode::fcccpy(&hdrl.code, "LIST");
+    hdrl.listsize = sizeof(AviEncode::avi_list_h) - 8 +
                     sizeof(AviEncode::AVIMAINHEADER) + sizeof(AviEncode::avi_list_h) +
                     sizeof(AviEncode::AVISTREAMHEADER) +
                     sizeof(AviEncode::BITMAPINFOHEADER);    // NOTE: Are we correct here?
-    AviEncode::fcccpy(&avih.listtype, "hdr1");
+    AviEncode::fcccpy(&hdrl.listtype, "hdr1");
 
     // Write main header for the AVI
+    AviEncode::avi_chunk_h avih;
+    AviEncode::fcccpy(&avih.chunkID, "avih");
+    avih.chunkSize = sizeof(AviEncode::AVIMAINHEADER);
+
     AviEncode::AVIMAINHEADER MH;
     AviEncode::fcccpy(&MH.fcc, "avih");
     MH.cb = sizeof(AviEncode::AVIMAINHEADER) - 8;
@@ -68,6 +71,10 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     AviEncode::fcccpy(&strl.listtype, "strl");
 
     // Write stream information for stream 1 strh
+    AviEncode::avi_chunk_h strh;
+    AviEncode::fcccpy(&strh.chunkID, "strh");
+    strh.chunkSize = sizeof(AviEncode::AVISTREAMHEADER);
+
     AviEncode::AVISTREAMHEADER SH;
     AviEncode::fcccpy(&SH.fcc, "strh");
     SH.cb = sizeof(AviEncode::AVISTREAMHEADER) - 8;
@@ -89,6 +96,10 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     SH.rcFrame.bottom = usersettings.height;
 
     // Stream 1 strf
+    AviEncode::avi_chunk_h strf;
+    AviEncode::fcccpy(&strf.chunkID, "strf");
+    strf.chunkSize = sizeof(AviEncode::BITMAPINFOHEADER);
+
     AviEncode::BITMAPINFOHEADER SF;
     SF.biSize = sizeof(AviEncode::BITMAPINFOHEADER);
     SF.biWidth = usersettings.width;
@@ -108,17 +119,20 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     movi.listsize = 0; // TODO: Calculate here the frame data length
     AviEncode::fcccpy(&movi.listtype, "movi");
 
-    file.write((const char*)&riff, sizeof(riff));
-    file.write((const char*)&avih, sizeof(avih));
-    file.write((const char*)&MH, sizeof(MH));
-    file.write((const char*)&strl, sizeof(strl));
-    file.write((const char*)&SH, sizeof(SH));
-    file.write((const char*)&SF, sizeof(SF));
-    file.write((const char*)&movi, sizeof(movi));
+    file.write((const char *) &riff, sizeof(riff));
+    file.write((const char *) &hdrl, sizeof(hdrl));
+    file.write((const char *) &avih, sizeof(avih));
+    file.write((const char *) &MH, sizeof(MH));
+    file.write((const char *) &strl, sizeof(strl));
+    file.write((const char *) &strh, sizeof(strh));
+    file.write((const char *) &SH, sizeof(SH));
+    file.write((const char *) &strf, sizeof(strf));
+    file.write((const char *) &SF, sizeof(SF));
+    file.write((const char *) &movi, sizeof(movi));
     return 0;
 }
 
-void AviEncode::fcccpy(AviEncode::FOURCC* fcc, std::string str) {
+void AviEncode::fcccpy(AviEncode::FOURCC *fcc, std::string str) {
     for (int i = 0; i < 4; i++)
         fcc->byte[i] = str[i];
 }
