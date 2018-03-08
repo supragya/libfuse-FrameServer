@@ -113,6 +113,8 @@ namespace AviEncode {
     public:
         AviContainer(const char *, avi_usersettings settings);
 
+        void AddFrame(char *framedata);
+
         ~AviContainer();
     };
 }

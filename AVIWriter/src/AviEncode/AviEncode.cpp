@@ -116,7 +116,7 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     // List movi
     AviEncode::avi_list_h movi;
     AviEncode::fcccpy(&movi.code, "LIST");
-    movi.listsize = 0; // TODO: Calculate here the frame data length
+    movi.listsize = 1000000; // TODO: Calculate here the frame data length
     AviEncode::fcccpy(&movi.listtype, "movi");
 
     file.write((const char *) &riff, sizeof(riff));
@@ -135,6 +135,14 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
 void AviEncode::fcccpy(AviEncode::FOURCC *fcc, std::string str) {
     for (int i = 0; i < 4; i++)
         fcc->byte[i] = str[i];
+}
+
+void AviEncode::AviContainer::AddFrame(char *framedata) {
+    AviEncode::avi_chunk_h vidframe;
+    AviEncode::fcccpy(&vidframe.chunkID, "00db");
+    vidframe.chunkSize = usersettings.height * usersettings.width * 3;
+    file.write((const char *)&vidframe, sizeof(vidframe));
+    file.write((const char *)&framedata, vidframe.chunkSize);
 }
 
 AviEncode::AviContainer::~AviContainer() {
