@@ -1,7 +1,11 @@
-/*
-    PiNG12RAW converts 12bit RGGB RAW image into 8 bit PNGs
-    Initial Author: Supragya Raj (supragyaraj@gmail.com)
-*/
+/* Copyright (C) 2018 Supragya Raj
+ * You may use, distribute and modify this code under the
+ * terms of the MIT license.
+ *
+ * libfuse-FrameServer - (https://github.com/supragya/libfuse-FrameServer)
+ *
+ */
+
 #define FUSE_USE_VERSION 26
 
 #include <fuse.h>
