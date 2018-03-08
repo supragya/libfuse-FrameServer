@@ -4,6 +4,10 @@
  *
  * libfuse-FrameServer - (https://github.com/supragya/libfuse-FrameServer)
  *
+ * https://msdn.microsoft.com/en-us/library/windows/desktop/dd318180(v=vs.85).aspx
+ * https://msdn.microsoft.com/en-us/library/windows/desktop/dd318229(v=vs.85).aspx
+ * https://msdn.microsoft.com/en-us/library/windows/desktop/dd318183(v=vs.85).aspx
+ * https://msdn.microsoft.com/en-us/library/windows/desktop/dd318180(v=vs.85).aspx
  */
 
 #ifndef AVIENCODE_H
@@ -15,75 +19,102 @@
 #include <memory>
 
 #define DWORD uint32_t
+#define WORD uint16_t
+#define LONG long
 
 namespace AviEncode {
 
     typedef struct {
         uint8_t byte[4];
-    } FourCC;
+    } FOURCC;
 
     typedef struct {
-        FourCC code;
+        FOURCC code;
         uint32_t listsize;
-        FourCC listtype;
+        FOURCC listtype;
     } avi_list_h;
 
     typedef struct {
-        FourCC chunkID;
+        FOURCC chunkID;
         uint32_t chunkSize;
     } avi_chunk_h;
 
-    FourCC createFourCC(char *c);
+    typedef struct {
+        unsigned int height;
+        unsigned int width;
+        unsigned int fps;
+    } avi_usersettings;
 
-    void setFourCC(FourCC *fcc, char *c);
+    typedef struct _avimainheader {
+        FOURCC fcc;
+        DWORD cb;
+        DWORD dwMicroSecPerFrame;
+        DWORD dwMaxBytesPerSec;
+        DWORD dwPaddingGranularity;
+        DWORD dwFlags;
+        DWORD dwTotalFrames;
+        DWORD dwInitialFrames;
+        DWORD dwStreams;
+        DWORD dwSuggestedBufferSize;
+        DWORD dwWidth;
+        DWORD dwHeight;
+        DWORD dwReserved[4];
+    } AVIMAINHEADER;
+
+    typedef struct _avistreamheader {
+        FOURCC fcc;
+        DWORD cb;
+        FOURCC fccType;
+        FOURCC fccHandler;
+        DWORD dwFlags;
+        WORD wPriority;
+        WORD wLanguage;
+        DWORD dwInitialFrames;
+        DWORD dwScale;
+        DWORD dwRate;
+        DWORD dwStart;
+        DWORD dwLength;
+        DWORD dwSuggestedBufferSize;
+        DWORD dwQuality;
+        DWORD dwSampleSize;
+        struct {
+            short int left;
+            short int top;
+            short int right;
+            short int bottom;
+        } rcFrame;
+    } AVISTREAMHEADER;
+
+    typedef struct tagBITMAPINFOHEADER {
+        DWORD biSize;
+        LONG biWidth;
+        LONG biHeight;
+        WORD biPlanes;
+        WORD biBitCount;
+        DWORD biCompression;
+        DWORD biSizeImage;
+        LONG biXPelsPerMeter;
+        LONG biYPelsPerMeter;
+        DWORD biClrUsed;
+        DWORD biClrImportant;
+    } BITMAPINFOHEADER;
+
+    void fcccpy(AviEncode::FOURCC* fcc, std::string str);
 
     class AviContainer {
     private:
         char *output_filename;
         unsigned int MaxBufLen;
-        unsigned int BufLen;
         std::fstream file;
-        typedef struct {
-            FourCC fcc;
-            DWORD cb;
-            DWORD dwMicroSecPerFrame;
-            DWORD dwMaxBytesPerSec;
-            DWORD dwPaddingGranularity;
-            DWORD dwFlags;
-            DWORD dwTotalFrames;
-            DWORD dwInitialFrames;
-            DWORD dwStreams;
-            DWORD dwSuggestedBufferSize;
-            DWORD dwWidth;
-            DWORD dwHeight;
-            DWORD dwReserved[4];
-        } AVIMAINHEADER;
-        AVIMAINHEADER avimainheader;
-        bool is_avimainheaderset;
+        avi_usersettings usersettings;
 
         void showBuffer(); // Only for debug
-
-    public:
-        AviContainer(const char *, unsigned int);
-
-        ~AviContainer();
-
-        int addtobuffer(char *, unsigned int);
-
-        char *writeBuffer;
-
         int WriteHeaderSequence();
 
-        void setAviMainHeader(FourCC code, DWORD usecperframe, DWORD maxbytepersec,
-                              DWORD paddinggranularity, DWORD flags, DWORD totalframes,
-                              DWORD initialframes, DWORD streams, DWORD suggestedbufsize,
-                              DWORD width, DWORD height);
+    public:
+        AviContainer(const char *, avi_usersettings settings);
 
-        unsigned int tellFileOffset();
-
-        int setFileOffset(unsigned int off);
-
-        int flushBuffer();
+        ~AviContainer();
     };
 }
 
