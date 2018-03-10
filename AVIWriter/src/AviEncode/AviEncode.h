@@ -4,7 +4,7 @@
  *
  * libfuse-FrameServer - (https://github.com/supragya/libfuse-FrameServer)
  *
- * https://msdn.microsoft.com/en-us/library/windows/desktop/dd318180(v=vs.85).aspx
+ * https://msdn.microsoft.com/en-us/library/windows/desktop/dd318189(v=vs.85).aspx
  * https://msdn.microsoft.com/en-us/library/windows/desktop/dd318229(v=vs.85).aspx
  * https://msdn.microsoft.com/en-us/library/windows/desktop/dd318183(v=vs.85).aspx
  * https://msdn.microsoft.com/en-us/library/windows/desktop/dd318180(v=vs.85).aspx
@@ -43,6 +43,7 @@ namespace AviEncode {
         unsigned int height;
         unsigned int width;
         unsigned int fps;
+        unsigned int framecnt;
     } avi_usersettings;
 
     typedef struct _avimainheader {
