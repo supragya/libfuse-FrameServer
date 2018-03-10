@@ -18,12 +18,11 @@ int main(int argc, char **argv) {
 
     long framelen = 1920 * 1080 * 3;
     char *frame = (char *)malloc(sizeof(char)*framelen);
-    for (int i = 0; i < 40; i++) {
-        for (long k = 0; k < framelen; k++)
-            *(frame+k) = (i*2)%255;
+    for (long k = 0; k < framelen; k++)
+        *(frame+k) = (int)(k*255.0/framelen);
+    for (int i = 0; i < 100; i++) {
         aviout.AddFrame(frame);
     }
-
     return 0;
 }
 
@@ -32,5 +31,5 @@ void setavisettings(AviEncode::avi_usersettings *settings) {
     settings->height = 1920;
     settings->width = 1080;
     settings->fps = 24;
-    settings->framecnt = 40;
+    settings->framecnt = 100;
 }

@@ -79,23 +79,23 @@ namespace AviEncode {
         DWORD dwQuality;
         DWORD dwSampleSize;
         struct {
-            short int left;
-            short int top;
-            short int right;
-            short int bottom;
+            uint8_t left;
+            uint8_t top;
+            uint8_t right;
+            uint8_t bottom;
         } rcFrame;
     } AVISTREAMHEADER;
 
     typedef struct tagBITMAPINFOHEADER {
         DWORD biSize;
-        LONG biWidth;
-        LONG biHeight;
+        DWORD biHeight;
+        DWORD biWidth;
         WORD biPlanes;
         WORD biBitCount;
-        DWORD biCompression;
+        FOURCC biCompression;
         DWORD biSizeImage;
-        LONG biXPelsPerMeter;
-        LONG biYPelsPerMeter;
+        DWORD biXPelsPerMeter;
+        DWORD biYPelsPerMeter;
         DWORD biClrUsed;
         DWORD biClrImportant;
     } BITMAPINFOHEADER;

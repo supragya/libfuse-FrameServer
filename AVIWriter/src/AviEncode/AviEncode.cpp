@@ -95,19 +95,20 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     // Write stream information for stream 1 strh
     AviEncode::AVISTREAMHEADER SH;
     AviEncode::fcccpy(&SH.fcc, "strh");
-    SH.cb = szAVISTREAMHEADER - szFOURCC - szDWORD;
+    SH.cb = szAVISTREAMHEADER - 8;
     AviEncode::fcccpy(&SH.fccType, "vids");
-    AviEncode::fcccpy(&SH.fccHandler, "8BPS");      // NOTE: Are we correct here?
+    AviEncode::fcccpy(&SH.fccHandler, "H264");      // NOTE: Are we correct here?
     SH.dwFlags = 0;
-    SH.wPriority = 1;
+    SH.wPriority = 0;
     SH.wLanguage = 0;
     SH.dwInitialFrames = 0;
     SH.dwScale = 1;
     SH.dwRate = 30;
-    SH.dwLength = 200;  // NOTE: Are we correct here?
-    SH.dwSuggestedBufferSize = 10000000;   // NOTE: Performance
+    SH.dwStart = 0;
+    SH.dwLength = 200;
+    SH.dwSuggestedBufferSize = 10000000;
     SH.dwQuality = 20;
-    SH.dwSampleSize = 120; //We can change this to some value given that frames are constant size
+    SH.dwSampleSize = 120;
     SH.rcFrame.left = 0;
     SH.rcFrame.right = usersettings.width;
     SH.rcFrame.top = 0;
@@ -121,12 +122,14 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     AviEncode::BITMAPINFOHEADER SF;
     SF.biSize = szAVIBITMAPINFOHEADER;
     SF.biWidth = usersettings.width;
-    SF.biHeight = -usersettings.height;
+//    std::cout<<"While writing header: "<<usersettings.width<<" "<<usersettings.height<<std::endl;
+    SF.biHeight = usersettings.height;
+//    std::cout<<"op: "<<SF.biHeight<<" "<<SF.biWidth<<std::endl;
     SF.biPlanes = 1;
-    SF.biBitCount = 24;
-    SF.biCompression = 0;
+    SF.biBitCount = 30;
+    AviEncode::fcccpy(&SF.biCompression, "RGB2");
     SF.biSizeImage = 0;
-    SF.biXPelsPerMeter = 2835; // 300 PPI
+    SF.biXPelsPerMeter = 2835;
     SF.biYPelsPerMeter = SF.biXPelsPerMeter; // Square Pixels
     SF.biClrUsed = 0;
     SF.biClrImportant = 0;
