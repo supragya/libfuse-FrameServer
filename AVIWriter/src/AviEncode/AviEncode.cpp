@@ -50,7 +50,7 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     riffsize += szChunk; // strf
     riffsize += szAVIBITMAPINFOHEADER; // BITMAPINFOHEADER
     riffsize += szList; // movi
-    riffsize += szChunk*usersettings.framecnt; // for each frame, chunk
+    riffsize += szChunk * usersettings.framecnt; // for each frame, chunk
     riffsize += usersettings.height * usersettings.width * 3 * usersettings.framecnt; // frame data
     riff.listsize = riffsize;
     AviEncode::fcccpy(&riff.listtype, "AVI ");
@@ -97,7 +97,7 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     AviEncode::fcccpy(&SH.fcc, "strh");
     SH.cb = szAVISTREAMHEADER - 8;
     AviEncode::fcccpy(&SH.fccType, "vids");
-    AviEncode::fcccpy(&SH.fccHandler, "H264");      // NOTE: Are we correct here?
+    AviEncode::fcccpy(&SH.fccHandler, "RGB2");
     SH.dwFlags = 0;
     SH.wPriority = 0;
     SH.wLanguage = 0;
@@ -107,7 +107,7 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     SH.dwStart = 0;
     SH.dwLength = 200;
     SH.dwSuggestedBufferSize = 10000000;
-    SH.dwQuality = 20;
+    SH.dwQuality = 0;
     SH.dwSampleSize = 120;
     SH.rcFrame.left = 0;
     SH.rcFrame.right = usersettings.width;
@@ -126,8 +126,8 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     SF.biHeight = usersettings.height;
 //    std::cout<<"op: "<<SF.biHeight<<" "<<SF.biWidth<<std::endl;
     SF.biPlanes = 1;
-    SF.biBitCount = 30;
-    AviEncode::fcccpy(&SF.biCompression, "RGB2");
+    SF.biBitCount = 24;
+    AviEncode::fcccpy(&SF.biCompression, "YUYV");
     SF.biSizeImage = 0;
     SF.biXPelsPerMeter = 2835;
     SF.biYPelsPerMeter = SF.biXPelsPerMeter; // Square Pixels
@@ -143,7 +143,7 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     movi.listsize = movisize;
     AviEncode::fcccpy(&movi.listtype, "movi");
 
-    std::cout<<"Writing header info at "<<file.tellp()<<" ";
+    std::cout << "Writing header info at " << file.tellp() << " ";
     file.write((const char *) &riff, sizeof(riff));
     file.write((const char *) &hdrl, sizeof(hdrl));
     file.write((const char *) &MH, sizeof(MH));
@@ -152,7 +152,7 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     file.write((const char *) &strf, sizeof(strf));
     file.write((const char *) &SF, sizeof(SF));
     file.write((const char *) &movi, sizeof(movi));
-    std::cout<<"ending at "<<file.tellp()<<std::endl;
+    std::cout << "ending at " << file.tellp() << std::endl;
     return 0;
 }
 
@@ -165,10 +165,11 @@ void AviEncode::AviContainer::AddFrame(char *framedata) {
     AviEncode::avi_chunk_h vidframe;
     AviEncode::fcccpy(&vidframe.chunkID, "00db");
     vidframe.chunkSize = usersettings.height * usersettings.width * 3;
-    std::cout<<"Writing frame at "<<file.tellp()<<" ";
+    std::cout << "Writing frame at " << file.tellp() << " ";
     file.write((const char *) &vidframe, sizeof(vidframe));
     file.write((const char *) framedata, vidframe.chunkSize);
-    std::cout<<"ending at "<<file.tellp()<<" data: "<<(int)framedata[0]<<" "<<(int)framedata[1]<<" "<<(int)framedata[2]<<std::endl;
+    std::cout << "ending at " << file.tellp() << " data: " << (int) framedata[0] << " " << (int) framedata[1] << " "
+              << (int) framedata[2] << std::endl;
 }
 
 AviEncode::AviContainer::~AviContainer() {

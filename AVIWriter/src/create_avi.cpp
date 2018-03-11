@@ -16,10 +16,14 @@ int main(int argc, char **argv) {
     setavisettings(&avisettings);
     AviEncode::AviContainer aviout("AviFile.avi", avisettings);
 
-    long framelen = 1920 * 1080 * 3;
-    char *frame = (char *)malloc(sizeof(char)*framelen);
-    for (long k = 0; k < framelen; k++)
-        *(frame+k) = (int)(k*255.0/framelen);
+    long framelen = 480 * 270 * 3;
+    char *frame = (char *) malloc(sizeof(char) * framelen);
+    for (int i = 0; i < 270; i++) {
+        for (int j = 0; j < 480; j++) {
+            for (int o = 0; o < 3; o++)
+                frame[3 * (i * 480) + 3 * j + o] = (int) 255 * ((480.0 * i + j) / (480 * 270));
+        }
+    }
     for (int i = 0; i < 100; i++) {
         aviout.AddFrame(frame);
     }
@@ -28,8 +32,8 @@ int main(int argc, char **argv) {
 
 // Set here the specifics of the AVI
 void setavisettings(AviEncode::avi_usersettings *settings) {
-    settings->height = 1920;
-    settings->width = 1080;
+    settings->height = 480;
+    settings->width = 270;
     settings->fps = 24;
     settings->framecnt = 100;
 }
