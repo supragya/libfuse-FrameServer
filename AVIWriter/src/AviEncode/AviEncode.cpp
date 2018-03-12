@@ -97,7 +97,7 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
     AviEncode::fcccpy(&SH.fcc, "strh");
     SH.cb = szAVISTREAMHEADER - 8;
     AviEncode::fcccpy(&SH.fccType, "vids");
-    AviEncode::fcccpy(&SH.fccHandler, "RGB2");
+    SH.fccHandler.byte[0] = SH.fccHandler.byte[1] = SH.fccHandler.byte[2] = SH.fccHandler.byte[3] = 0;
     SH.dwFlags = 0;
     SH.wPriority = 0;
     SH.wLanguage = 0;
@@ -127,7 +127,8 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
 //    std::cout<<"op: "<<SF.biHeight<<" "<<SF.biWidth<<std::endl;
     SF.biPlanes = 1;
     SF.biBitCount = 24;
-    AviEncode::fcccpy(&SF.biCompression, "YUYV");
+    AviEncode::fcccpy(&SF.biCompression, " RAW");
+    SF.biCompression.byte[0] = SF.biCompression.byte[1] = SF.biCompression.byte[2] = SF.biCompression.byte[3] = 0;
     SF.biSizeImage = 0;
     SF.biXPelsPerMeter = 2835;
     SF.biYPelsPerMeter = SF.biXPelsPerMeter; // Square Pixels
