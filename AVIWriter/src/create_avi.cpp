@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     AviEncode::AviContainer aviout("AviFile.avi", avisettings);
 
     long framelen = 480 * 270 * 3;
-    char* frame = new char[framelen];
+    char *frame = new char[framelen];
     SFrame::GrayScaleGradient(frame, 480, 270);
     for (int i = 0; i < 50; i++) {
         aviout.AddFrame(frame);
