@@ -20,7 +20,15 @@ int main(int argc, char **argv) {
     long framelen = 480 * 270 * 3;
     char* frame = new char[framelen];
     SFrame::GrayScaleGradient(frame, 480, 270);
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 50; i++) {
+        aviout.AddFrame(frame);
+    }
+    SFrame::RGBStripes(frame, 480, 270);
+    for (int i = 0; i < 50; i++) {
+        aviout.AddFrame(frame);
+    }
+    SFrame::AbstractFrame1(frame, 480, 270);
+    for (int i = 0; i < 50; i++) {
         aviout.AddFrame(frame);
     }
     return 0;
@@ -29,6 +37,6 @@ int main(int argc, char **argv) {
 void setavisettings(AviEncode::avi_usersettings *settings) {
     settings->height = 480;
     settings->width = 270;
-    settings->fps = 24;
-    settings->framecnt = 100;
+    settings->fps = 24; // TODO: MAKE FPS SEEP INTO HEADERS
+    settings->framecnt = 150;
 }

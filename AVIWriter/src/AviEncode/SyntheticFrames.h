@@ -6,11 +6,13 @@
  *
  */
 
-#ifndef LIBFUSE_FRAMESERVER_SYNTHETICFRAMES_H
-#define LIBFUSE_FRAMESERVER_SYNTHETICFRAMES_H
+#ifndef SYNTHETICFRAMES_H
+#define SYNTHETICFRAMES_H
 
 namespace SFrame{
     int GrayScaleGradient(char* frame, unsigned int width, unsigned int height);
+    int AbstractFrame1(char* frame, unsigned int width, unsigned int height);
+    int RGBStripes(char* frame, unsigned int width, unsigned int height);
 }
 
 #endif
