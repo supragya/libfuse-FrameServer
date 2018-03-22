@@ -23,137 +23,57 @@ AviEncode::AviContainer::AviContainer(const char *filename, avi_usersettings use
         std::cerr << "[AviContainer] Error: Cannot open file \"" << filename << "\"" << std::endl;
     }
 
+    hdrBuffer = new char[MAXHEADERBUFLEN];
+    init_sizes();
+    std::cout<<sz.List<<" "<<sz.Chunk<<" "<<sz.FOURCC<<" "<<sz._uint32_t<<" "<<std::endl;
     WriteHeaderSequence();
 }
 
 int AviEncode::AviContainer::WriteHeaderSequence() {
 
-    // Compute sizes
-    DWORD szList = sizeof(AviEncode::avi_list_h);
-    DWORD szChunk = sizeof(AviEncode::avi_chunk_h);
-    DWORD szFOURCC = sizeof(AviEncode::FOURCC);
-    DWORD szDWORD = sizeof(DWORD);
-    DWORD szAVIMAINHEADER = sizeof(AviEncode::AVIMAINHEADER);
-    DWORD szAVISTREAMHEADER = sizeof(AviEncode::AVISTREAMHEADER);
-    DWORD szAVIBITMAPINFOHEADER = sizeof(AviEncode::BITMAPINFOHEADER);
+    AviEncode::avi_list_h riff = riffHeader();
+    AviEncode::avi_list_h hdrl = hdrlHeader();
+    AviEncode::AVIMAINHEADER mh = avihHeader();
+    AviEncode::avi_list_h strl = strlHeader();
+    AviEncode::AVISTREAMHEADER strh = strhHeader();
+    AviEncode::avi_chunk_h strf_c = strfHeader_c();
+    AviEncode::BITMAPINFOHEADER strf_v = strfHeader_v();
+    AviEncode::avi_list_h movi = moviHeader();
 
-    // RIFF List
-    AviEncode::avi_list_h riff;
-    AviEncode::fcccpy(&riff.code, "RIFF");
-    DWORD riffsize = szList - szFOURCC - szDWORD; //Riff list
-    riffsize += szList; // hdr1 list header
-    riffsize += szList; // avih
-    riffsize += szAVIMAINHEADER; // AVIMAINHEADER
-    riffsize += szList; // strl
-    riffsize += szChunk; // strh
-    riffsize += szAVISTREAMHEADER; // AVISTREAMHEADER
-    riffsize += szChunk; // strf
-    riffsize += szAVIBITMAPINFOHEADER; // BITMAPINFOHEADER
-    riffsize += szList; // movi
-    riffsize += szChunk * usersettings.framecnt; // for each frame, chunk
-    riffsize += usersettings.height * usersettings.width * 3 * usersettings.framecnt; // frame data
-    riff.listsize = riffsize;
-    AviEncode::fcccpy(&riff.listtype, "AVI ");
+    hdrBufferLen = 0;
 
-    // avih list
-    AviEncode::avi_list_h hdrl;
-    AviEncode::fcccpy(&hdrl.code, "LIST");
-    DWORD hdrlsize = szList - szFOURCC - szDWORD; // hdrl list
-    hdrlsize += szList; // strh
-    hdrlsize += szAVISTREAMHEADER; // AVISTREAMHEADER
-    hdrlsize += szList; // stff
-    hdrlsize += szAVIBITMAPINFOHEADER; // AVIBITMAPINFOHEADER
-    hdrl.listsize = hdrlsize;
-    AviEncode::fcccpy(&hdrl.listtype, "hdrl");
+    memcpy((void*)hdrBuffer, (const void *) &riff, sz.List);
+    hdrBufferLen += sz.List;
 
-    AviEncode::AVIMAINHEADER MH;
-    AviEncode::fcccpy(&MH.fcc, "avih");
-    MH.cb = sizeof(AviEncode::AVIMAINHEADER) - 8;
-    MH.dwMicroSecPerFrame = 2854;
-    MH.dwMaxBytesPerSec = 100000;
-    MH.dwPaddingGranularity = 0;
-    MH.dwFlags = 0;
-    MH.dwTotalFrames = usersettings.framecnt;
-    MH.dwInitialFrames = 0;
-    MH.dwStreams = 1;
-    MH.dwSuggestedBufferSize = 100000;
-    MH.dwWidth = usersettings.width;
-    MH.dwHeight = usersettings.height;
-    MH.dwReserved[0] = MH.dwReserved[1] = MH.dwReserved[2] = MH.dwReserved[3] = 0;
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&hdrl, sz.List);
+    hdrBufferLen += sz.List;
 
-    // strl list
-    AviEncode::avi_list_h strl;
-    AviEncode::fcccpy(&strl.code, "LIST");
-    DWORD strlsize = szList - szFOURCC - szDWORD;
-    strlsize += szChunk;
-    strlsize += szAVISTREAMHEADER;
-    strlsize += szChunk;
-    strlsize += szAVIBITMAPINFOHEADER;
-    strl.listsize = strlsize;
-    AviEncode::fcccpy(&strl.listtype, "strl");
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&mh, sz.AVIMAINHEADER);
+    hdrBufferLen += sz.AVIMAINHEADER;
 
-    // Write stream information for stream 1 strh
-    AviEncode::AVISTREAMHEADER SH;
-    AviEncode::fcccpy(&SH.fcc, "strh");
-    SH.cb = szAVISTREAMHEADER - 8;
-    AviEncode::fcccpy(&SH.fccType, "vids");
-    SH.fccHandler.byte[0] = SH.fccHandler.byte[1] = SH.fccHandler.byte[2] = SH.fccHandler.byte[3] = 0;
-    SH.dwFlags = 0;
-    SH.wPriority = 0;
-    SH.wLanguage = 0;
-    SH.dwInitialFrames = 0;
-    SH.dwScale = 1;
-    SH.dwRate = 30;
-    SH.dwStart = 0;
-    SH.dwLength = 200;
-    SH.dwSuggestedBufferSize = 10000000;
-    SH.dwQuality = 0;
-    SH.dwSampleSize = 120;
-    SH.rcFrame.left = 0;
-    SH.rcFrame.right = usersettings.width;
-    SH.rcFrame.top = 0;
-    SH.rcFrame.bottom = usersettings.height;
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&strl, sz.List);
+    hdrBufferLen += sz.List;
 
-    // Stream 1 strf
-    AviEncode::avi_chunk_h strf;
-    AviEncode::fcccpy(&strf.chunkID, "strf");
-    strf.chunkSize = sizeof(AviEncode::BITMAPINFOHEADER);
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&strh, sz.AVISTREAMHEADER);
+    hdrBufferLen += sz.AVISTREAMHEADER;
 
-    AviEncode::BITMAPINFOHEADER SF;
-    SF.biSize = szAVIBITMAPINFOHEADER;
-    SF.biWidth = usersettings.width;
-//    std::cout<<"While writing header: "<<usersettings.width<<" "<<usersettings.height<<std::endl;
-    SF.biHeight = usersettings.height;
-//    std::cout<<"op: "<<SF.biHeight<<" "<<SF.biWidth<<std::endl;
-    SF.biPlanes = 1;
-    SF.biBitCount = 24;
-    AviEncode::fcccpy(&SF.biCompression, " RAW");
-    SF.biCompression.byte[0] = SF.biCompression.byte[1] = SF.biCompression.byte[2] = SF.biCompression.byte[3] = 0;
-    SF.biSizeImage = 0;
-    SF.biXPelsPerMeter = 2835;
-    SF.biYPelsPerMeter = SF.biXPelsPerMeter; // Square Pixels
-    SF.biClrUsed = 0;
-    SF.biClrImportant = 0;
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&strf_c, sz.Chunk);
+    hdrBufferLen += sz.Chunk;
 
-    // List movi
-    AviEncode::avi_list_h movi;
-    AviEncode::fcccpy(&movi.code, "LIST");
-    DWORD movisize = szList - szFOURCC - szDWORD;
-    movisize += szChunk * usersettings.framecnt;
-    movisize += usersettings.height * usersettings.width * 3 * usersettings.framecnt;
-    movi.listsize = movisize;
-    AviEncode::fcccpy(&movi.listtype, "movi");
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&strf_v, sz.AVIBITMAPINFOHEADER);
+    hdrBufferLen += sz.AVIBITMAPINFOHEADER;
+
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&movi, sz.List);
+    hdrBufferLen += sz.List;
+
+    std::cout<<hdrBuffer<<std::endl;
+    std::cout<<hdrBufferLen<<std::endl;
+    std::cout<<sz.AVISTREAMHEADER<<std::endl;
 
     std::cout << "Writing header info at " << file.tellp() << " ";
-    file.write((const char *) &riff, sizeof(riff));
-    file.write((const char *) &hdrl, sizeof(hdrl));
-    file.write((const char *) &MH, sizeof(MH));
-    file.write((const char *) &strl, sizeof(strl));
-    file.write((const char *) &SH, sizeof(SH));
-    file.write((const char *) &strf, sizeof(strf));
-    file.write((const char *) &SF, sizeof(SF));
-    file.write((const char *) &movi, sizeof(movi));
+    file.write((const char *) &hdrBuffer, hdrBufferLen);
     std::cout << "ending at " << file.tellp() << std::endl;
+
     return 0;
 }
 
@@ -162,18 +82,29 @@ void AviEncode::fcccpy(AviEncode::FOURCC *fcc, std::string str) {
         fcc->byte[i] = str[i];
 }
 
+void AviEncode::fcccpy(AviEncode::FOURCC *fcc, int hexval) {
+    for (int i = 3; i >= 0; i--) {
+        fcc->byte[i] = hexval % 16;
+        hexval = hexval >> 4;
+    }
+}
+
 void AviEncode::AviContainer::AddFrame(char *framedata) {
     AviEncode::avi_chunk_h vidframe;
     AviEncode::fcccpy(&vidframe.chunkID, "00db");
-    vidframe.chunkSize = usersettings.height * usersettings.width * 3;
+    vidframe.chunkSize = calculateSize(VIDFRAME);
+
     std::cout << "Writing frame at " << file.tellp() << " ";
     file.write((const char *) &vidframe, sizeof(vidframe));
     file.write((const char *) framedata, vidframe.chunkSize);
+
     std::cout << "ending at " << file.tellp() << " data: " << (int) framedata[0] << " " << (int) framedata[1] << " "
               << (int) framedata[2] << std::endl;
 }
 
+
 AviEncode::AviContainer::~AviContainer() {
+    delete hdrBuffer;
     delete output_filename;
     file.close();
 }

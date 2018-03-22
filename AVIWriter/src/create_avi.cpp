@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
                 frame[3 * (i * 480) + 3 * j + o] = (int) 255 * ((480.0 * i + j) / (480 * 270));
         }
     }
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10; i++) {
         aviout.AddFrame(frame);
     }
     return 0;
