@@ -7,41 +7,42 @@
  */
 
 #include "AviEncode.h"
+#include "AviSizes.h"
 
 uint32_t AviEncode::AviContainer::calculateSize(sizeType type) {
     uint32_t size = 0;
     switch (type) {
         case RIFF:
-            size = sz.List - sz.FOURCC - sz._uint32_t  //Riff list
-                   + sz.List                     // hdr1 list header
-                   + sz.List                     // avih
-                   + sz.AVIMAINHEADER            // AVIMAINHEADER
-                   + sz.List                     // strl
-                   + sz.Chunk                    // strh
-                   + sz.AVISTREAMHEADER          // AVISTREAMHEADER
-                   + sz.Chunk                    // strf
-                   + sz.AVIBITMAPINFOHEADER      // BITMAPINFOHEADER
-                   + sz.List                     // movi
-                   + sz.Chunk * usersettings.framecnt    // for each frame, chunk
+            size = szList - szFOURCC - sz_uint32_t  //Riff list
+                   + szList                     // hdr1 list header
+                   + szList                     // avih
+                   + szAVIMAINHEADER            // AVIMAINHEADER
+                   + szList                     // strl
+                   + szChunk                    // strh
+                   + szAVISTREAMHEADER          // AVISTREAMHEADER
+                   + szChunk                    // strf
+                   + szAVIBITMAPINFOHEADER      // BITMAPINFOHEADER
+                   + szList                     // movi
+                   + szChunk * usersettings.framecnt    // for each frame, chunk
                    + usersettings.height * usersettings.width * 3 * usersettings.framecnt; // frame data
             break;
         case HDRL:
-            size = sz.List - sz.FOURCC - sz._uint32_t  // hdrl list
-                   + sz.List                     // strh
-                   + sz.AVISTREAMHEADER          // AVISTREAMHEADER
-                   + sz.List                     // strf
-                   + sz.AVIBITMAPINFOHEADER;     // AVIBITMAPINFOHEADER
+            size = szList - szFOURCC - sz_uint32_t  // hdrl list
+                   + szList                     // strh
+                   + szAVISTREAMHEADER          // AVISTREAMHEADER
+                   + szList                     // strf
+                   + szAVIBITMAPINFOHEADER;     // AVIBITMAPINFOHEADER
             break;
         case STRL:
-            size = sz.List - sz.FOURCC - sz._uint32_t
-                   + sz.Chunk
-                   + sz.AVISTREAMHEADER
-                   + sz.Chunk
-                   + sz.AVIBITMAPINFOHEADER;
+            size = szList - szFOURCC - sz_uint32_t
+                   + szChunk
+                   + szAVISTREAMHEADER
+                   + szChunk
+                   + szAVIBITMAPINFOHEADER;
             break;
         case MOVI:
-            size = sz.List - sz.FOURCC - sz._uint32_t
-                   + sz.Chunk * usersettings.framecnt
+            size = szList - szFOURCC - sz_uint32_t
+                   + szChunk * usersettings.framecnt
                    + usersettings.height * usersettings.width * 3 * usersettings.framecnt;
             break;
         case VIDFRAME:
@@ -71,7 +72,7 @@ AviEncode::avi_list_h AviEncode::AviContainer::hdrlHeader() {
 AviEncode::AVIMAINHEADER AviEncode::AviContainer::avihHeader() {
     AviEncode::AVIMAINHEADER hdr;
     AviEncode::fcccpy(&hdr.fcc, "avih");
-    hdr.cb = sz.AVIMAINHEADER - 8;
+    hdr.cb = szAVIMAINHEADER - 8;
     hdr.MicroSecPerFrame = 2854;
     hdr.MaxBytesPerSec = 100000;
     hdr.PaddingGranularity = 0;
@@ -97,7 +98,7 @@ AviEncode::avi_list_h AviEncode::AviContainer::strlHeader() {
 AviEncode::AVISTREAMHEADER AviEncode::AviContainer::strhHeader() {
     AviEncode::AVISTREAMHEADER hdr;
     AviEncode::fcccpy(&hdr.fcc, "strh");
-    hdr.cb = sz.AVISTREAMHEADER - 8;
+    hdr.cb = szAVISTREAMHEADER - 8;
     AviEncode::fcccpy(&hdr.fccType, "vids");
     AviEncode::fcccpy(&hdr.fccHandler, 0x00000000);
     hdr.Flags = 0;
@@ -121,13 +122,13 @@ AviEncode::AVISTREAMHEADER AviEncode::AviContainer::strhHeader() {
 AviEncode::avi_chunk_h AviEncode::AviContainer::strfHeader_c() {
     AviEncode::avi_chunk_h hdr;
     AviEncode::fcccpy(&hdr.chunkID, "strf");
-    hdr.chunkSize = sz.AVIBITMAPINFOHEADER;
+    hdr.chunkSize = szAVIBITMAPINFOHEADER;
     return hdr;
 }
 
 AviEncode::BITMAPINFOHEADER AviEncode::AviContainer::strfHeader_v() {
     AviEncode::BITMAPINFOHEADER hdr;
-    hdr.Size = sz.AVIBITMAPINFOHEADER;
+    hdr.Size = szAVIBITMAPINFOHEADER;
     hdr.Width = usersettings.width;
     hdr.Height = usersettings.height;
     hdr.Planes = 1;

@@ -11,7 +11,7 @@
  */
 
 #include "AviEncode.h"
-
+#include "AviSizes.h"
 
 AviEncode::AviContainer::AviContainer(const char *filename, avi_usersettings usersettings) {
     output_filename = new char[1000];
@@ -24,8 +24,7 @@ AviEncode::AviContainer::AviContainer(const char *filename, avi_usersettings use
     }
 
     hdrBuffer = new char[MAXHEADERBUFLEN];
-    init_sizes();
-    std::cout<<sz.List<<" "<<sz.Chunk<<" "<<sz.FOURCC<<" "<<sz._uint32_t<<" "<<std::endl;
+    std::cout<<szList<<" "<<szList<<" "<<szChunk<<" "<<szFOURCC<<" "<<sz_uint32_t<<" "<<std::endl;
     WriteHeaderSequence();
 }
 
@@ -42,36 +41,36 @@ int AviEncode::AviContainer::WriteHeaderSequence() {
 
     hdrBufferLen = 0;
 
-    memcpy((void*)hdrBuffer, (const void *) &riff, sz.List);
-    hdrBufferLen += sz.List;
+    memcpy((void*)hdrBuffer, (const void *) &riff, szList);
+    hdrBufferLen += szList;
 
-    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&hdrl, sz.List);
-    hdrBufferLen += sz.List;
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&hdrl, szList);
+    hdrBufferLen += szList;
 
-    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&mh, sz.AVIMAINHEADER);
-    hdrBufferLen += sz.AVIMAINHEADER;
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&mh, szAVIMAINHEADER);
+    hdrBufferLen += szAVIMAINHEADER;
 
-    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&strl, sz.List);
-    hdrBufferLen += sz.List;
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&strl, szList);
+    hdrBufferLen += szList;
 
-    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&strh, sz.AVISTREAMHEADER);
-    hdrBufferLen += sz.AVISTREAMHEADER;
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&strh, szAVISTREAMHEADER);
+    hdrBufferLen += szAVISTREAMHEADER;
 
-    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&strf_c, sz.Chunk);
-    hdrBufferLen += sz.Chunk;
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&strf_c, szChunk);
+    hdrBufferLen += szChunk;
 
-    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&strf_v, sz.AVIBITMAPINFOHEADER);
-    hdrBufferLen += sz.AVIBITMAPINFOHEADER;
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&strf_v, szAVIBITMAPINFOHEADER);
+    hdrBufferLen += szAVIBITMAPINFOHEADER;
 
-    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&movi, sz.List);
-    hdrBufferLen += sz.List;
+    memcpy((void*)(hdrBuffer+hdrBufferLen), (const void *)&movi, szList);
+    hdrBufferLen += szList;
 
     std::cout<<hdrBuffer<<std::endl;
     std::cout<<hdrBufferLen<<std::endl;
-    std::cout<<sz.AVISTREAMHEADER<<std::endl;
+    std::cout<<szAVISTREAMHEADER<<std::endl;
 
     std::cout << "Writing header info at " << file.tellp() << " ";
-    file.write((const char *) &hdrBuffer, hdrBufferLen);
+    file.write(hdrBuffer, hdrBufferLen);
     std::cout << "ending at " << file.tellp() << std::endl;
 
     return 0;
@@ -101,7 +100,6 @@ void AviEncode::AviContainer::AddFrame(char *framedata) {
     std::cout << "ending at " << file.tellp() << " data: " << (int) framedata[0] << " " << (int) framedata[1] << " "
               << (int) framedata[2] << std::endl;
 }
-
 
 AviEncode::AviContainer::~AviContainer() {
     delete hdrBuffer;

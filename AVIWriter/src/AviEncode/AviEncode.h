@@ -106,18 +106,6 @@ namespace AviEncode {
         MOVI,
         VIDFRAME
     };
-    
-    struct sizes{
-        uint32_t List;
-        uint32_t Chunk;
-        uint32_t FOURCC;
-        uint32_t _uint32_t;
-        uint32_t AVIMAINHEADER;
-        uint32_t AVISTREAMHEADER;
-        uint32_t AVIBITMAPINFOHEADER;
-    };
-
-    static sizes sz;
 
     void fcccpy(AviEncode::FOURCC *fcc, std::string str);
 
